@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb+srv://mandefrowamanuel:2kDLGJ8v8O74PgYl@songy.0jy7h.mongodb.net/songy?retryWrites=true&w=majority&appName=songy
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5.0
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongo-data:

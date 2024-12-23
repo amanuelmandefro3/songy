@@ -10,6 +10,7 @@ import { DeleteSong } from '../application/use-cases/song/DeleteSong';
 import { GetAllSongs } from '../application/use-cases/song/GetAllSongs';
 import { GetStatistics } from '../application/use-cases/song/GetStatistics';
 import { SearchSongs } from '../application/use-cases/song/SearchSongs';
+import { setupSwagger } from './swagger';
 
 export const createApp = (): express.Application => {
   const app = express();
@@ -28,6 +29,8 @@ export const createApp = (): express.Application => {
 
   app.use('/api/songs', songRouter(songController));
   app.use(errorMiddleware);
+
+  setupSwagger(app)
 
   return app;
 };

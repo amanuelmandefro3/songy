@@ -6,8 +6,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
-      MONGODB_URI: mongodb+srv://mandefrowamanuel:2kDLGJ8v8O74PgYl@songy.0jy7h.mongodb.net/songy?retryWrites=true&w=majority&appName=songy
+      NODE_ENV: ${NODE_ENV}
+      MONGODB_URI: ${MONGODB_URI} 
     depends_on:
       - mongo
 

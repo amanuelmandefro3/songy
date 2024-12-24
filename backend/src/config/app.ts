@@ -11,10 +11,12 @@ import { GetAllSongs } from '../application/use-cases/song/GetAllSongs';
 import { GetStatistics } from '../application/use-cases/song/GetStatistics';
 import { SearchSongs } from '../application/use-cases/song/SearchSongs';
 import { setupSwagger } from './swagger';
+import cors from "cors"
 
 export const createApp = (): express.Application => {
   const app = express();
   app.use(express.json());
+  app.use(cors({ origin: '*' }));
 
   const songRepository = new SongRepository();
   const songController = new SongController(
@@ -30,7 +32,7 @@ export const createApp = (): express.Application => {
   app.use('/api/songs', songRouter(songController));
   app.use(errorMiddleware);
 
-  setupSwagger(app)
+  setupSwagger(app);
 
   return app;
 };

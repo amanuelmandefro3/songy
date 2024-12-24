@@ -1,9 +1,29 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import { RootState } from '../store'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { RootState, AppDispatch } from '../store'
+import { setStatistics, setLoading, setError } from '../store/statisticsSlice'
+import api from '../services/api'
 
 const Statistics: React.FC = () => {
-  const statistics = useSelector((state: RootState) => state.statistics.data)
+  const dispatch = useDispatch<AppDispatch>()
+  const { data: statistics, loading, error } = useSelector((state: RootState) => state.statistics)
+
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      dispatch(setLoading(true))
+      try {
+        const data = await api.getStatistics()
+        dispatch(setStatistics(data))
+      } catch (err) {
+        dispatch(setError(err instanceof Error ? err.message : 'Failed to fetch statistics'))
+      }
+    }
+
+    fetchStatistics()
+  }, [dispatch])
+
+  if (loading) return <div>Loading statistics...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <div className="bg-white rounded-lg shadow-md sm:p-6">
@@ -45,6 +65,16 @@ const Statistics: React.FC = () => {
               ))}
             </ul>
           </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-2 text-green-500">Latest Songs</h3>
+            <ul className="space-y-2">
+              {statistics.latestSongs.map((song) => (
+                <li key={song._id}>
+                  {song.title} by {song.artist} ({new Date(song.releaseDate).toLocaleDateString()})
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -52,4 +82,3 @@ const Statistics: React.FC = () => {
 }
 
 export default Statistics
-

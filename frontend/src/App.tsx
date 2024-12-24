@@ -29,7 +29,6 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="min-h-screen flex flex-col bg-gray-50">
-        {/* Header */}
         <header className="bg-white border-b">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row justify-between items-center h-16">
@@ -50,10 +49,10 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Main Content */}
+
         <main className="flex-grow">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className=" p-6">
               <Routes>
                 <Route path="/" element={<SongList />} />
                 <Route path="/statistics" element={<Statistics />} />
@@ -62,7 +61,7 @@ const App: React.FC = () => {
           </div>
         </main>
 
-        {/* Footer */}
+
         <footer className="bg-white mt-auto border-t">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">

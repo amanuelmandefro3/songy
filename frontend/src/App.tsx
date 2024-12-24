@@ -1,8 +1,11 @@
 import React from 'react'
 import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import SongList from './components/SongList'
 import Statistics from './components/Statistics'
 import SongForm from './components/SongForm'
+import Footer from './components/Footer'
 
 const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
   const location = useLocation()
@@ -25,10 +28,10 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="font-sans bg-gray-100 min-h-screen">
-        <header className="p-4 shadow-sm">
+      <div className="flex flex-col min-h-screen">
+        <header className="p-4 shadow-sm bg-white">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-            <Link to="/" className="text-3xl font-bold text-green-500 mb-2 sm:mb-0">Songy</Link>
+            <Link to="/" className="text-3xl font-bold text-green-500 mb-4 sm:mb-0">Songy</Link>
             <nav className="flex items-center space-x-6">
               <NavLink to="/">Songs</NavLink>
               <NavLink to="/statistics">Statistics</NavLink>
@@ -41,19 +44,34 @@ const App: React.FC = () => {
             </nav>
           </div>
         </header>
-        <main className="max-w-6xl mx-auto  sm:p-8">
+
+        <main className="flex-1 max-w-6xl mx-auto p-4 sm:p-8 w-full">
           <Routes>
             <Route path="/" element={<SongList />} />
             <Route path="/statistics" element={<Statistics />} />
           </Routes>
         </main>
+
         {isAddFormOpen && (
           <SongForm onClose={() => setIsAddFormOpen(false)} />
         )}
+        
+        <Footer />
+
+        <ToastContainer 
+          position="top-right" 
+          autoClose={3000} 
+          hideProgressBar={false} 
+          newestOnTop={false} 
+          closeOnClick 
+          rtl={false} 
+          pauseOnFocusLoss 
+          draggable 
+          pauseOnHover 
+        />
       </div>
     </Router>
   )
 }
 
 export default App
-

@@ -1,16 +1,17 @@
 import React from 'react'
 
 interface PaginationProps {
-  songsPerPage: number
-  totalSongs: number
-  paginate: (pageNumber: number) => void
-  currentPage: number
+  songsPerPage: number;
+  totalSongs: number;
+  totalPages: number;
+  paginate: (pageNumber: number) => void;
+  currentPage: number;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ songsPerPage, totalSongs, paginate, currentPage }) => {
+const Pagination: React.FC<PaginationProps> = ({ totalPages, paginate, currentPage }) => {
   const pageNumbers = []
 
-  for (let i = 1; i <= Math.ceil(totalSongs / songsPerPage); i++) {
+  for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i)
   }
 
@@ -37,3 +38,4 @@ const Pagination: React.FC<PaginationProps> = ({ songsPerPage, totalSongs, pagin
 }
 
 export default Pagination
+

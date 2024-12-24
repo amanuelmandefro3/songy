@@ -1,122 +1,107 @@
-// src/store/songSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { SongDTO } from '../services/api'
-import { AppDispatch } from '.'
-import api from '../services/api'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { getSongs, createSong, updateSong, deleteSong, Song } from '../api/songApi';
 
-export interface Song {
-  id: string
-  title: string
-  artist: string
-  album: string
-  genre: string
-  releasedDate: string
-}
-
-interface SongState {
-  songs: Song[]
-  loading: boolean
-  error: string | null
+export interface SongState {
+  songs: Song[];
+  totalSongs: number;
+  totalPages: number;
+  currentPage: number;
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: SongState = {
   songs: [],
+  totalSongs: 0,
+  totalPages: 0,
+  currentPage: 1,
   loading: false,
-  error: null
-}
+  error: null,
+};
+
+export const fetchSongs = createAsyncThunk(
+  'songs/fetchSongs',
+  async ({ page, limit }: { page: number; limit: number }) => {
+    const response = await getSongs(page, limit);
+    return response;
+  }
+);
+
+export const addSong = createAsyncThunk(
+  'songs/addSong',
+  async (song: Omit<Song, '_id'>, { dispatch, getState }) => {
+    await createSong(song);
+    const state = getState() as { songs: SongState };
+    await dispatch(fetchSongs({ page: state.songs.currentPage, limit: 5 }));
+  }
+);
+
+export const updateSongAction = createAsyncThunk(
+  'songs/updateSong',
+  async ({ id, song }: { id: string; song: Omit<Song, '_id'> }, { dispatch, getState }) => {
+    await updateSong(id, song);
+    const state = getState() as { songs: SongState };
+    await dispatch(fetchSongs({ page: state.songs.currentPage, limit: 5 }));
+  }
+);
+
+export const deleteSongAction = createAsyncThunk(
+  'songs/deleteSong',
+  async (id: string, { dispatch, getState }) => {
+    await deleteSong(id);
+    const state = getState() as { songs: SongState };
+    await dispatch(fetchSongs({ page: state.songs.currentPage, limit: 5 }));
+  }
+);
 
 const songSlice = createSlice({
   name: 'songs',
   initialState,
-  reducers: {
-    setSongs: (state, action: PayloadAction<SongDTO[]>) => {
-      state.songs = action.payload.map(song => ({
-        id: song._id,
-        title: song.title,
-        artist: song.artist,
-        album: song.album,
-        genre: song.genre,
-        releasedDate: song.releaseDate
-      }));
-      state.loading = false;
-      state.error = null;
-    },
-    addSongSuccess: (state, action: PayloadAction<SongDTO>) => {
-      const newSong: Song = {
-        id: action.payload._id,
-        title: action.payload.title,
-        artist: action.payload.artist,
-        album: action.payload.album,
-        genre: action.payload.genre,
-        releasedDate: action.payload.releaseDate
-      };
-      state.songs.push(newSong);
-    },
-    updateSongSuccess: (state, action: PayloadAction<SongDTO>) => {
-      const index = state.songs.findIndex(song => song.id === action.payload._id);
-      if (index !== -1) {
-        state.songs[index] = {
-          id: action.payload._id,
-          title: action.payload.title,
-          artist: action.payload.artist,
-          album: action.payload.album,
-          genre: action.payload.genre,
-          releasedDate: action.payload.releaseDate
-        };
-      }
-    },
-    deleteSongSuccess: (state, action: PayloadAction<string>) => {
-      state.songs = state.songs.filter(song => song.id !== action.payload);
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-      state.loading = false;
-    }
-  }
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchSongs.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSongs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.songs = action.payload.songs;
+        state.totalSongs = action.payload.total;
+        state.totalPages = action.payload.totalPages;
+        state.currentPage = action.payload.currentPage;
+        state.error = null;
+      })
+      .addCase(fetchSongs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch songs';
+      })
+      .addCase(addSong.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addSong.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to add song';
+      })
+      .addCase(updateSongAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateSongAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to update song';
+      })
+      .addCase(deleteSongAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteSongAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to delete song';
+      });
+  },
 });
 
-// Async thunk actions
-export const addSong = (songData: Omit<Song, 'id'>) => async (dispatch: AppDispatch) => {
-  try {
-    const response = await api.addSong({
-      ...songData,
-      releaseDate: songData.releasedDate
-    });
-    dispatch(addSongSuccess(response));
-    return response;
-  } catch (error) {
-    dispatch(setError(error instanceof Error ? error.message : 'Failed to add song'));
-    throw error;
-  }
-};
-
-export const updateSong = (song: Song) => async (dispatch: AppDispatch) => {
-  try {
-    const response = await api.updateSong(song.id, {
-      title: song.title,
-      artist: song.artist,
-      album: song.album,
-      genre: song.genre,
-      releaseDate: song.releasedDate
-    });
-    dispatch(updateSongSuccess(response));
-    return response;
-  } catch (error) {
-    dispatch(setError(error instanceof Error ? error.message : 'Failed to update song'));
-    throw error;
-  }
-};
-
-export const {
-  setSongs,
-  addSongSuccess,
-  updateSongSuccess,
-  deleteSongSuccess,
-  setLoading,
-  setError
-} = songSlice.actions;
-
 export default songSlice.reducer;
+

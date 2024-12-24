@@ -12,10 +12,12 @@ export interface Song {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
+  songs: T[];
   total: number;
   page: number;
   limit: number;
+  totalPages: number;
+  currentPage: number;
 }
 
 export const getSongs = async (page: number, limit: number): Promise<PaginatedResponse<Song>> => {

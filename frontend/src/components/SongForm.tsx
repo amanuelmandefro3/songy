@@ -13,19 +13,32 @@ interface SongFormProps {
   onClose: () => void
 }
 
+interface SongFormValues {
+  title: string
+  artist: string
+  album: string
+  genre: string
+  releaseDate: string
+}
+
 const schema = yup.object({
   title: yup.string().required('Title is required').max(100, 'Title must be 100 characters or less'),
   artist: yup.string().required('Artist is required'),
   album: yup.string().required('Album is required'),
   genre: yup.string().required('Genre is required'),
-  releaseDate: yup.date().required('Release date is required').max(new Date(), 'Release date cannot be in the future'),
+  releaseDate: yup.string()
+    .required('Release date is required')
+    .test('is-valid-date', 'Release date must be a valid date', value => !isNaN(Date.parse(value)))
+    .test('not-in-future', 'Release date cannot be in the future', value => new Date(value) <= new Date()),
 }).required()
+
+const genres = ['Rock', 'Pop', 'Hip Hop', 'Jazz', 'Classical', 'Electronic', 'R&B', 'Country', 'Blues', 'Reggae']
 
 const SongForm: React.FC<SongFormProps> = ({ song, onClose }) => {
   const dispatch = useDispatch<AppDispatch>()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { control, handleSubmit, formState: { errors } } = useForm<Song>({
+  const { control, handleSubmit, formState: { errors } } = useForm<SongFormValues>({
     resolver: yupResolver(schema),
     defaultValues: song ? {
       ...song,
@@ -39,7 +52,7 @@ const SongForm: React.FC<SongFormProps> = ({ song, onClose }) => {
     },
   })
 
-  const onSubmit = async (data: Song) => {
+  const onSubmit = async (data: SongFormValues) => {
     setIsSubmitting(true)
     try {
       if (song) {
@@ -51,11 +64,7 @@ const SongForm: React.FC<SongFormProps> = ({ song, onClose }) => {
       }
       onClose()
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(`Failed to save song: ${error.message}`)
-      } else {
-        toast.error('Failed to save song')
-      }
+      toast.error(`Failed to save song: ${(error as Error).message}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -120,12 +129,18 @@ const SongForm: React.FC<SongFormProps> = ({ song, onClose }) => {
             render={({ field }) => (
               <div>
                 <label htmlFor="genre" className="block text-sm font-medium text-gray-700">Genre</label>
-                <input
+                <select
                   {...field}
-                  type="text"
                   id="genre"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                />
+                >
+                  <option value="">Select a genre</option>
+                  {genres.map((genre) => (
+                    <option key={genre} value={genre}>
+                      {genre}
+                    </option>
+                  ))}
+                </select>
                 {errors.genre && <p className="text-red-500 text-sm mt-1">{errors.genre.message}</p>}
               </div>
             )}

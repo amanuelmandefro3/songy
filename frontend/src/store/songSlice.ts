@@ -10,6 +10,15 @@ export interface SongState {
   error: string | null;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  currentPage: number;
+}
+
 const initialState: SongState = {
   songs: [],
   totalSongs: 0,
